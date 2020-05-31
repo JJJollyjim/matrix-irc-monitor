@@ -81,6 +81,17 @@ rec {
     #   inject test dependencies into the build
 
     crates = {
+      "arc-swap" = rec {
+        crateName = "arc-swap";
+        version = "0.4.6";
+        edition = "2015";
+        sha256 = "0qhgb2wys9sxi7d380w5wvsf3zcijf62gs8365bgqijc4f5ak1dm";
+        authors = [
+          "Michal 'vorner' Vaner <vorner@vorner.cz>"
+        ];
+        features = {
+        };
+      };
       "autocfg" = rec {
         crateName = "autocfg";
         version = "1.0.0";
@@ -1266,6 +1277,34 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "std" ];
       };
+      "listenfd" = rec {
+        crateName = "listenfd";
+        version = "0.3.3";
+        edition = "2015";
+        sha256 = "188cprmlnqmgwy7kfxwqsp9jrqapgr1a5w4jqn0xxqpj6bkmh8a9";
+        authors = [
+          "Armin Ronacher <armin.ronacher@active-4.com>"
+        ];
+        dependencies = [
+          {
+            name = "libc";
+            packageId = "libc";
+            target = { target, features }: (!target."windows");
+          }
+          {
+            name = "uuid";
+            packageId = "uuid";
+            target = { target, features }: target."windows";
+          }
+          {
+            name = "winapi";
+            packageId = "winapi 0.3.8";
+            target = { target, features }: target."windows";
+            features = [ "winsock2" "processthreadsapi" ];
+          }
+        ];
+        
+      };
       "lock_api" = rec {
         crateName = "lock_api";
         version = "0.3.4";
@@ -1335,12 +1374,24 @@ rec {
             packageId = "futures-util";
           }
           {
+            name = "hyper";
+            packageId = "hyper";
+          }
+          {
             name = "irc";
             packageId = "irc";
           }
           {
+            name = "listenfd";
+            packageId = "listenfd";
+          }
+          {
             name = "pin-utils";
             packageId = "pin-utils";
+          }
+          {
+            name = "rand";
+            packageId = "rand";
           }
           {
             name = "ruma-client";
@@ -1352,9 +1403,17 @@ rec {
             features = [ "derive" ];
           }
           {
+            name = "serde_json";
+            packageId = "serde_json";
+          }
+          {
             name = "tokio";
             packageId = "tokio";
-            features = [ "macros" ];
+            features = [ "macros" "signal" ];
+          }
+          {
+            name = "tracing";
+            packageId = "tracing";
           }
         ];
         
@@ -2713,6 +2772,27 @@ rec {
         ];
         
       };
+      "signal-hook-registry" = rec {
+        crateName = "signal-hook-registry";
+        version = "1.2.0";
+        edition = "2015";
+        sha256 = "0haz828bif1lbp3alx17zkcy5hwy15bbpmvks72j8iznx7npix4l";
+        authors = [
+          "Michal 'vorner' Vaner <vorner@vorner.cz>"
+          "Masaki Hara <ackie.h.gmai@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "arc-swap";
+            packageId = "arc-swap";
+          }
+          {
+            name = "libc";
+            packageId = "libc";
+          }
+        ];
+        
+      };
       "slab" = rec {
         crateName = "slab";
         version = "0.4.2";
@@ -3032,6 +3112,12 @@ rec {
             packageId = "pin-project-lite";
           }
           {
+            name = "signal-hook-registry";
+            packageId = "signal-hook-registry";
+            optional = true;
+            target = { target, features }: target."unix";
+          }
+          {
             name = "slab";
             packageId = "slab";
             optional = true;
@@ -3040,6 +3126,13 @@ rec {
             name = "tokio-macros";
             packageId = "tokio-macros";
             optional = true;
+          }
+          {
+            name = "winapi";
+            packageId = "winapi 0.3.8";
+            optional = true;
+            usesDefaultFeatures = false;
+            target = { target, features }: target."windows";
           }
         ];
         features = {
@@ -3062,7 +3155,7 @@ rec {
           "udp" = [ "io-driver" ];
           "uds" = [ "io-driver" "mio-uds" "libc" ];
         };
-        resolvedDefaultFeatures = [ "blocking" "default" "dns" "fnv" "futures-core" "io-driver" "io-util" "iovec" "lazy_static" "libc" "macros" "memchr" "mio" "mio-uds" "net" "rt-core" "slab" "stream" "sync" "tcp" "time" "tokio-macros" "udp" "uds" ];
+        resolvedDefaultFeatures = [ "blocking" "default" "dns" "fnv" "futures-core" "io-driver" "io-util" "iovec" "lazy_static" "libc" "macros" "memchr" "mio" "mio-uds" "net" "rt-core" "signal" "signal-hook-registry" "slab" "stream" "sync" "tcp" "time" "tokio-macros" "udp" "uds" "winapi" ];
       };
       "tokio-macros" = rec {
         crateName = "tokio-macros";
@@ -3195,6 +3288,89 @@ rec {
         ];
         
       };
+      "tracing" = rec {
+        crateName = "tracing";
+        version = "0.1.14";
+        edition = "2018";
+        sha256 = "08r98sp312rxwsm26wzgd013w134gfvhdswhv6r8q8bd26fvbim7";
+        authors = [
+          "Eliza Weisman <eliza@buoyant.io>"
+          "Tokio Contributors <team@tokio.rs>"
+        ];
+        dependencies = [
+          {
+            name = "cfg-if";
+            packageId = "cfg-if";
+          }
+          {
+            name = "tracing-attributes";
+            packageId = "tracing-attributes";
+            optional = true;
+          }
+          {
+            name = "tracing-core";
+            packageId = "tracing-core";
+            usesDefaultFeatures = false;
+          }
+        ];
+        features = {
+          "attributes" = [ "tracing-attributes" ];
+          "default" = [ "std" "attributes" ];
+          "log-always" = [ "log" ];
+          "std" = [ "tracing-core/std" ];
+        };
+        resolvedDefaultFeatures = [ "attributes" "default" "std" "tracing-attributes" ];
+      };
+      "tracing-attributes" = rec {
+        crateName = "tracing-attributes";
+        version = "0.1.8";
+        edition = "2018";
+        sha256 = "0k4qvq437md3zynm8qbas6jfb0xp222xisij6af3r4pxwc6svfwr";
+        procMacro = true;
+        authors = [
+          "Tokio Contributors <team@tokio.rs>"
+          "Eliza Weisman <eliza@buoyant.io>"
+          "David Barsky <dbarsky@amazon.com>"
+        ];
+        dependencies = [
+          {
+            name = "proc-macro2";
+            packageId = "proc-macro2";
+          }
+          {
+            name = "quote";
+            packageId = "quote";
+          }
+          {
+            name = "syn";
+            packageId = "syn";
+            features = [ "full" "extra-traits" ];
+          }
+        ];
+        features = {
+        };
+      };
+      "tracing-core" = rec {
+        crateName = "tracing-core";
+        version = "0.1.10";
+        edition = "2018";
+        sha256 = "05dpa21valy0c6nj5ybn951774icxhdb70cwq0ida7088yd3ma0a";
+        authors = [
+          "Tokio Contributors <team@tokio.rs>"
+        ];
+        dependencies = [
+          {
+            name = "lazy_static";
+            packageId = "lazy_static";
+            optional = true;
+          }
+        ];
+        features = {
+          "default" = [ "std" ];
+          "std" = [ "lazy_static" ];
+        };
+        resolvedDefaultFeatures = [ "lazy_static" "std" ];
+      };
       "try-lock" = rec {
         crateName = "try-lock";
         version = "0.2.2";
@@ -3291,6 +3467,34 @@ rec {
         ];
         
       };
+      "uuid" = rec {
+        crateName = "uuid";
+        version = "0.6.5";
+        edition = "2015";
+        sha256 = "0qv3hyqaw8303qq1l770xxxsis2qnnh9xp8arvcxqd9931c6whz1";
+        authors = [
+          "Ashley Mannix<ashleymannix@live.com.au>"
+          "Christopher Armstrong"
+          "Dylan DPC<dylan.dpc@gmail.com>"
+          "Hunar Roop Kahlon<hunar.roop@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "cfg-if";
+            packageId = "cfg-if";
+          }
+        ];
+        features = {
+          "const_fn" = [ "nightly" ];
+          "default" = [ "std" ];
+          "u128" = [ "byteorder" ];
+          "use_std" = [ "std" ];
+          "v3" = [ "md5" "rand" ];
+          "v4" = [ "rand" ];
+          "v5" = [ "sha1" "rand" ];
+        };
+        resolvedDefaultFeatures = [ "default" "std" ];
+      };
       "vcpkg" = rec {
         crateName = "vcpkg";
         version = "0.2.8";
@@ -3368,7 +3572,7 @@ rec {
         features = {
           "debug" = [ "impl-debug" ];
         };
-        resolvedDefaultFeatures = [ "errhandlingapi" "fileapi" "handleapi" "lmcons" "minschannel" "minwinbase" "minwindef" "ntdef" "ntstatus" "profileapi" "schannel" "securitybaseapi" "sspi" "std" "sysinfoapi" "timezoneapi" "winbase" "wincrypt" "winerror" "winnt" "winsock2" "ws2def" "ws2ipdef" "ws2tcpip" ];
+        resolvedDefaultFeatures = [ "consoleapi" "errhandlingapi" "fileapi" "handleapi" "lmcons" "minschannel" "minwinbase" "minwindef" "ntdef" "ntstatus" "processthreadsapi" "profileapi" "schannel" "securitybaseapi" "sspi" "std" "sysinfoapi" "timezoneapi" "winbase" "wincrypt" "winerror" "winnt" "winsock2" "ws2def" "ws2ipdef" "ws2tcpip" ];
       };
       "winapi-build" = rec {
         crateName = "winapi-build";

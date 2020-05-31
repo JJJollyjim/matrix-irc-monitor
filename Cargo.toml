@@ -8,12 +8,17 @@ edition = "2018"
 
 [dependencies]
 ruma-client = { git = "https://github.com/ruma/ruma-client" }
-tokio = { version = "0.2.21", features = ["macros"] }
+tokio = { version = "0.2.21", features = ["macros", "signal"] }
 serde = { version = "1.0.111", features = ["derive"] }
 envy = "0.4.1"
 futures-util = "0.3.5"
 pin-utils = "0.1.0"
 irc = "0.14.0"
+rand = "0.7.3"
+serde_json = "1.0.53"
+hyper = "0.13.6"
+tracing = "0.1.14"
+listenfd = "0.3.3"
 
 [[bin]]
 name = "login"
