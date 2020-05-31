@@ -22,10 +22,8 @@ use serde_json::json;
 use std::{
     convert::{Infallible, TryInto},
     error::Error,
-    fs,
-    marker::Sized,
     sync::Arc,
-    time::{Duration, Instant, SystemTime},
+    time::{Duration, Instant},
 };
 use tokio::signal;
 use tracing::*;
@@ -127,13 +125,21 @@ async fn matrix_stream<'a>(
         SetPresence::Offline,
         Some(Duration::from_secs(60)),
     );
-    // pin_mut!(stream);
 
     let msg_stream = Box::pin(
         stream
+            .filter_map(|m| async {
+                match m {
+                    Ok(m) => Some(m),
+                    Err(e) => {
+                        error!(?e, "matrix sync error");
+                        None
+                    }
+                }
+            })
             .flat_map(|m| {
                 stream::iter(
-                    if let Some((_id, room)) = m.expect("matrix msg err").rooms.join.iter().next() {
+                    if let Some((_id, room)) = m.rooms.join.iter().next() {
                         room.timeline.events.clone()
                     } else {
                         vec![]
@@ -189,6 +195,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 async fn main2() -> Result<(), Box<dyn Error>> {
+    tracing_subscriber::fmt::init();
+
     let config = Box::leak(Box::new(
         envy::prefixed("MATRIX_IRC_MONITOR_").from_env::<Config>()?,
     ));
@@ -273,13 +281,6 @@ bridgemon_i2m_time {}
             }}))
         }
     });
-
-    // ("metrics").and_then(|| async {
-    // });
-
-    // let svc = warp::service(app);
-
-    // let make_svc = hyper::service::make_service_fn(|_: _| async move { Ok::<_, Infallible>(svc) });
 
     Server::from_tcp(
         ListenFd::from_env()
