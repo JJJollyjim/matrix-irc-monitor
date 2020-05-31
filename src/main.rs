@@ -233,15 +233,19 @@ async fn main2() -> Result<(), Box<dyn Error>> {
                 let (i2m_res, m2i_res) = future::join(
                     async {
                         let irc_send_result = irc_send(&i2m_str);
-                        info!(?irc_send_result);
+                        if let Err(e) = irc_send_result {
+                            error!(?e, "irc-send-err");
+                        }
                         (
                             matrix_watch(i2m_str, Duration::from_secs(50)).await,
                             start_time.elapsed(),
                         )
                     },
                     async {
-                        let m_send_result = matrix_send(m2i_str.clone()).await;
-                        info!(?m_send_result);
+                        let matrix_send_result = matrix_send(m2i_str.clone()).await;
+                        if let Err(e) = matrix_send_result {
+                            error!(?e, "matrix-send-err");
+                        }
                         (
                             irc_watch(m2i_str, Duration::from_secs(50)).await,
                             start_time.elapsed(),
